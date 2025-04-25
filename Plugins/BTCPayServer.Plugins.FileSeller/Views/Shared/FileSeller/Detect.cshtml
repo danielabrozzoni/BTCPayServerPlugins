@@ -1,6 +1,39 @@
-﻿@using BTCPayServer.Abstractions.Extensions
+@using BTCPayServer.Abstractions.Extensions
 @using BTCPayServer.Plugins.FileSeller
 @{
-
     FileSellerService.UrlToUse = Context.Request.GetAbsoluteRootUri();
 }
+
+<script>
+document.addEventListener('btcpay-invoice-paid', function(e) {
+    console.log("Invoice paid, checking for downloadable content...");
+    const receiptData = e.detail?.invoiceMetadata?.receiptData;
+    if (receiptData && receiptData["Downloadable Content"]) {
+        const container = document.createElement("div");
+        container.style.marginTop = "20px";
+
+        const title = document.createElement("h2");
+        title.innerText = "Your Downloads:";
+        container.appendChild(title);
+
+        const list = document.createElement("ul");
+
+        for (const [fileName, link] of Object.entries(receiptData["Downloadable Content"])) {
+            const item = document.createElement("li");
+            const a = document.createElement("a");
+            a.href = link;
+            a.className = "btn btn-primary";
+            a.innerText = `Download ${fileName}`;
+            a.download = fileName;
+            a.target = "_blank";
+            item.appendChild(a);
+            list.appendChild(item);
+        }
+
+        container.appendChild(list);
+
+        const checkoutContainer = document.querySelector(".checkout-container") || document.body;
+        checkoutContainer.appendChild(container);
+    }
+});
+</script>

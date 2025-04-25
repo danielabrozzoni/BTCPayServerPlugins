@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -87,7 +87,7 @@ namespace BTCPayServer.Plugins.FileSeller
                     {
                         case PointOfSaleAppType.AppType:
                             var possettings = data.GetSettings<PointOfSaleSettings>();
-                            return (Data: data, Settings: (object) possettings,
+                            return (Data: data, Settings: (object)possettings,
                                 Items: AppService.Parse(possettings.Template));
                         case CrowdfundAppType.AppType:
                             var cfsettings = data.GetSettings<CrowdfundSettings>();
@@ -122,18 +122,26 @@ namespace BTCPayServer.Plugins.FileSeller
 
                 var res = await Task.WhenAll(productLinkTasks.Values);
 
-
                 if (res.Any(s => !string.IsNullOrEmpty(s)))
                 {
-                    var productTitleToFile = productLinkTasks.Select(pair => (pair.Key.FileName, pair.Value.Result))
+                    var productTitleToFile = productLinkTasks
+                        .Select(pair => (pair.Key.FileName, pair.Value.Result))
                         .Where(s => s.Result is not null)
                         .ToDictionary(tuple => tuple.FileName, tuple => tuple.Result);
 
-                    var receiptData = new JObject();
-                    receiptData.Add("Downloadable Content", JObject.FromObject(productTitleToFile));
+                    var receiptData = new JObject
+                    {
+                        ["Downloadable Content"] = JObject.FromObject(productTitleToFile)
+                    };
 
-                    if (invoiceEvent.Invoice.Metadata.AdditionalData?.TryGetValue("receiptData",
-                            out var existingReceiptData) is true &&
+                    // Generate clean Bootstrap download buttons HTML
+                    var downloadButtonsHtml = string.Join("<br/>", productTitleToFile.Select(pair =>
+                        $"<a class='btn btn-primary m-1' href='{pair.Value}' download='{pair.Key}' target='_blank'>Download {pair.Key}</a>"
+                    ));
+
+                    receiptData["html"] = downloadButtonsHtml;
+
+                    if (invoiceEvent.Invoice.Metadata.AdditionalData?.TryGetValue("receiptData", out var existingReceiptData) is true &&
                         existingReceiptData is JObject existingReceiptDataObj)
                     {
                         receiptData.Merge(existingReceiptDataObj);

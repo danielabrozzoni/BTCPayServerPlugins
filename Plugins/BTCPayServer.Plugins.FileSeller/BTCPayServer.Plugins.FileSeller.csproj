@@ -8,7 +8,7 @@
     <!-- Plugin specific properties -->
     <PropertyGroup>
         <Product>File Seller Dani</Product>
-        <Description>Allows you to sell files through the point of sale/crowdfund apps.</Description>
+        <Description>Allows you to sell files through the point of sale/crowdfund apps. Dani :)</Description>
         <Version>2.0.6</Version>
 <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
